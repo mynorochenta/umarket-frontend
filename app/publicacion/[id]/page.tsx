@@ -34,7 +34,7 @@ export default function PublicacionPage() {
   const [shared, setShared] = useState(false);
 
   useEffect(() => {
-    apiGet<Publicacion>(`/api/publicaciones/${params.id}`)
+    apiGet<Publicacion>(`/api/listings/${params.id}`)
       .then((data) => {
         setPublicacion({
           ...data,

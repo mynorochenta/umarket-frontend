@@ -53,7 +53,7 @@ function FeedInner() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
 
   useEffect(() => {
-    apiGet<Publicacion[]>("/api/publicaciones")
+    apiGet<Publicacion[]>("/api/listings")
       .then((data) => {
         setPublicaciones(
           data.map((p) => ({

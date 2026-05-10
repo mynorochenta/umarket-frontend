@@ -58,7 +58,7 @@ export default function RegistroPage() {
     setError("");
     setLoading(true);
     try {
-      await apiPost("/api/usuarios/registro", { nombre, email, universidad, password });
+      await apiPost("/api/users/register", { name: nombre, email, university: universidad, password });
       router.push("/verificar-email");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear la cuenta");
