@@ -65,7 +65,7 @@ export default function ChatPage() {
           <Image src={otro.avatar} alt={otro.name} width={36} height={36} className="rounded-full" />
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">{otro.name}</p>
-            <VerifiedBadge universidad={otro.universityShort} size="xs" />
+            <VerifiedBadge university={otro.universityShort} size="xs" />
           </div>
         </Link>
         {conv.listingTitle && (

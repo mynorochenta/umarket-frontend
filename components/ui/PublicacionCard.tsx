@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { cardItem, cardHoverProps } from "@/lib/animations";
-import { VerifiedBadge, CondicionBadge } from "./Badge";
+import { VerifiedBadge, ConditionBadge } from "./Badge";
 import type { Listing } from "@/lib/types";
 
 interface PublicacionCardProps {
@@ -31,8 +31,8 @@ function ListCard({
           <div className="flex-1 min-w-0 flex flex-col gap-1">
             <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{p.title}</p>
             <p className="text-primary font-bold text-lg leading-tight">Q{p.price.toLocaleString()}</p>
-            <VerifiedBadge universidad={p.seller.university} size="xs" />
-            <CondicionBadge condicion={p.itemCondition} size="xs" className="w-fit" />
+            <VerifiedBadge university={p.seller.university} size="xs" />
+            <ConditionBadge condition={p.itemCondition} size="xs" className="w-fit" />
           </div>
           <motion.button
             onClick={(e) => { e.preventDefault(); onToggleFavorite(String(p.id)); }}
@@ -103,10 +103,10 @@ export function PublicacionCard({
             <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2 text-sm leading-snug">
               {p.title}
             </h3>
-            <VerifiedBadge universidad={p.seller.university} size="xs" className="w-fit" />
+            <VerifiedBadge university={p.seller.university} size="xs" className="w-fit" />
 
             <div className="pt-1.5 mt-auto border-t border-gray-100 dark:border-gray-700">
-              <CondicionBadge condicion={p.itemCondition} size="xs" />
+              <ConditionBadge condition={p.itemCondition} size="xs" />
             </div>
           </div>
         </div>

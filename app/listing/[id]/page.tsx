@@ -9,7 +9,7 @@ import {
   ArrowLeft, Heart, Share2, MessageCircle, CheckCircle,
   ChevronLeft, ChevronRight,
 } from "lucide-react";
-import { VerifiedBadge, CondicionBadge } from "@/components/ui/Badge";
+import { VerifiedBadge, ConditionBadge } from "@/components/ui/Badge";
 import { useFavorites } from "@/hooks/useFavorites";
 import { pageTransition, fadeInUp } from "@/lib/animations";
 import { apiGet, ApiError } from "@/lib/api";
@@ -212,7 +212,7 @@ export default function PublicacionPage() {
                 <span className="inline-flex items-center text-xs border border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 px-2.5 py-1 rounded-full">
                   {publicacion.category.name}
                 </span>
-                <CondicionBadge condicion={publicacion.itemCondition} size="sm" />
+                <ConditionBadge condition={publicacion.itemCondition} size="sm" />
                 <span className="text-xs text-gray-400">
                   · {timeAgo(new Date(publicacion.publishedAt))}
                 </span>
@@ -289,7 +289,7 @@ export default function PublicacionPage() {
                   <p className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                     {publicacion.seller.name}
                   </p>
-                  <VerifiedBadge universidad={publicacion.seller.university} size="xs" />
+                  <VerifiedBadge university={publicacion.seller.university} size="xs" />
                 </div>
               </Link>
 

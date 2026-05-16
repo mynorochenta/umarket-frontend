@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
-import { CondicionBadge } from "@/components/ui/Badge";
+import { ConditionBadge } from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import { getListingsBySeller } from "@/lib/mock-data";
 import { pageTransition, staggerContainer, cardItem } from "@/lib/animations";
@@ -76,7 +76,7 @@ export default function MisPublicacionesPage() {
                     </Link>
                     <p className="text-primary font-bold text-lg">Q{p.price.toLocaleString()}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <CondicionBadge condicion={p.itemCondition} size="xs" />
+                      <ConditionBadge condition={p.itemCondition} size="xs" />
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 flex-shrink-0">
