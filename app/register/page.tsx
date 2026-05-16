@@ -4,18 +4,22 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, User, CheckCircle, AlertCircle, ArrowRight, Eye, EyeOff } from "lucide-react";
+import {
+  Mail, Lock, User, CheckCircle, AlertCircle, ArrowRight,
+  Eye, EyeOff, ShieldCheck,
+} from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
-import { universidades } from "@/lib/mock-data";
 import { apiPost } from "@/lib/api";
 import { fadeInUp } from "@/lib/animations";
+
+const inputCls =
+  "w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 " +
+  "focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all";
 
 function EduBadge({ email }: { email: string }) {
   const valid = email.includes(".edu") && email.includes("@");
   const hasAt = email.includes("@");
-
   if (!hasAt || email.split("@")[0].length < 2) return null;
-
   return (
     <AnimatePresence>
       <motion.div
@@ -23,34 +27,27 @@ function EduBadge({ email }: { email: string }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         className={`flex items-center gap-1.5 mt-1.5 text-xs ${
-          valid ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"
+          valid ? "text-emerald-400" : "text-red-400"
         }`}
       >
-        {valid ? (
-          <CheckCircle className="w-3.5 h-3.5" />
-        ) : (
-          <AlertCircle className="w-3.5 h-3.5" />
-        )}
-        {valid
-          ? "Email universitario válido ✓"
-          : "Necesitas un email con dominio .edu"}
+        {valid ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+        {valid ? "Email universitario válido ✓" : "Necesitas un email con dominio .edu"}
       </motion.div>
     </AnimatePresence>
   );
 }
 
-export default function RegistroPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const [nombre, setNombre] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [universidad, setUniversidad] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const isEduEmail = email.includes("@") && email.includes(".edu");
-  const canSubmit = nombre && isEduEmail && universidad && password.length >= 8;
+  const canSubmit = name && isEduEmail && password.length >= 8;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +55,8 @@ export default function RegistroPage() {
     setError("");
     setLoading(true);
     try {
-      await apiPost("/api/users/register", { name: nombre, email, university: universidad, password });
-      router.push("/verificar-email");
+      await apiPost("/api/users/register", { name, email, password });
+      router.push("/verify-email");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear la cuenta");
     } finally {
@@ -68,40 +65,39 @@ export default function RegistroPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-12 bg-white dark:bg-[#0A0F1E] dark:[background-image:radial-gradient(circle_at_1px_1px,rgba(6,182,212,0.08)_1px,transparent_0)] dark:[background-size:32px_32px]"
+    >
       <motion.div
         variants={fadeInUp}
         initial="initial"
         animate="animate"
         className="w-full max-w-md"
       >
-        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 p-8">
-          {/* Header */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl p-8">
+
+          {/* Logo + tagline */}
           <div className="flex flex-col items-center text-center mb-8">
             <Logo size="md" href="/" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mt-4">
-              Crea tu cuenta
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-              Solo para estudiantes universitarios guatemaltecos
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">El marketplace de tu universidad</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+
             {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Nombre completo
               </label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
                   type="text"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                   placeholder="Ana González"
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                  className={`${inputCls} pl-10 pr-4 py-3`}
                 />
               </div>
             </div>
@@ -112,37 +108,17 @@ export default function RegistroPage() {
                 Email universitario
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="ana.gonzalez@uvg.edu.gt"
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                  className={`${inputCls} pl-10 pr-4 py-3`}
                 />
               </div>
               <EduBadge email={email} />
-            </div>
-
-            {/* Universidad */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Universidad
-              </label>
-              <select
-                value={universidad}
-                onChange={(e) => setUniversidad(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-              >
-                <option value="">Selecciona tu universidad</option>
-                {universidades.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.nombre} ({u.nombreCorto})
-                  </option>
-                ))}
-              </select>
             </div>
 
             {/* Contraseña */}
@@ -151,7 +127,7 @@ export default function RegistroPage() {
                 Contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
                   type={showPass ? "text" : "password"}
                   value={password}
@@ -159,17 +135,17 @@ export default function RegistroPage() {
                   required
                   minLength={8}
                   placeholder="Mínimo 8 caracteres"
-                  className="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                  className={`${inputCls} pl-10 pr-10 py-3`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {/* Indicador de fortaleza */}
+              {/* Strength bar */}
               {password && (
                 <div className="flex gap-1 mt-2">
                   {[1, 2, 3].map((level) => (
@@ -178,7 +154,7 @@ export default function RegistroPage() {
                       className={`h-1 flex-1 rounded-full transition-colors ${
                         password.length >= level * 4
                           ? level === 1
-                            ? "bg-red-400"
+                            ? "bg-red-500"
                             : level === 2
                             ? "bg-amber-400"
                             : "bg-emerald-500"
@@ -190,33 +166,30 @@ export default function RegistroPage() {
               )}
             </div>
 
+            {/* Error */}
             {error && (
-              <p className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+              <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-xl px-3 py-2">
                 {error}
               </p>
             )}
 
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-600">
               Al registrarte aceptas nuestros{" "}
-              <a href="#" className="text-primary hover:underline">
-                términos de uso
-              </a>{" "}
-              y{" "}
-              <a href="#" className="text-primary hover:underline">
-                política de privacidad
-              </a>
-              .
+              <a href="#" className="text-cyan-600 hover:text-cyan-500 transition-colors">términos de uso</a>
+              {" "}y{" "}
+              <a href="#" className="text-cyan-600 hover:text-cyan-500 transition-colors">política de privacidad</a>.
             </p>
 
+            {/* Submit */}
             <motion.button
               type="submit"
               disabled={!canSubmit || loading}
               whileHover={{ scale: canSubmit ? 1.01 : 1 }}
               whileTap={{ scale: canSubmit ? 0.98 : 1 }}
-              className="w-full flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin" />
               ) : (
                 <>
                   Crear cuenta
@@ -224,11 +197,17 @@ export default function RegistroPage() {
                 </>
               )}
             </motion.button>
+
+            {/* Trust line */}
+            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-600" />
+              Tu correo .edu verifica que eres estudiante
+            </div>
           </form>
 
-          <p className="mt-5 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-5 text-center text-sm text-gray-500 dark:text-gray-500">
             ¿Ya tienes cuenta?{" "}
-            <Link href="/login" className="text-primary font-semibold hover:underline">
+            <Link href="/login" className="text-cyan-500 font-semibold hover:text-cyan-400 transition-colors">
               Inicia sesión
             </Link>
           </p>

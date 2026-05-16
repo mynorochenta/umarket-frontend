@@ -17,13 +17,11 @@ export function SearchBar({
   compact = false,
 }: SearchBarProps) {
   const router = useRouter();
-  const { query, setQuery, suggestions, history, addToHistory, clearHistory } =
-    useSearch();
+  const { query, setQuery, suggestions, history, addToHistory, clearHistory } = useSearch();
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  /* Cerrar dropdown al click fuera */
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
@@ -38,11 +36,10 @@ export function SearchBar({
     addToHistory(q);
     setOpen(false);
     setQuery(q);
-    router.push(`/buscar?q=${encodeURIComponent(q)}`);
+    router.push(`/search?q=${encodeURIComponent(q)}`);
   };
 
-  const showDropdown =
-    open && (suggestions.length > 0 || history.length > 0);
+  const showDropdown = open && (suggestions.length > 0 || history.length > 0);
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -75,10 +72,8 @@ export function SearchBar({
         )}
       </div>
 
-      {/* Dropdown */}
       {showDropdown && (
         <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
-          {/* Sugerencias de publicaciones */}
           {suggestions.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-4 pt-3 pb-1">
@@ -87,36 +82,24 @@ export function SearchBar({
               {suggestions.map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => submit(s.titulo)}
+                  onClick={() => submit(s.title)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
                 >
                   <TrendingUp className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm text-gray-900 dark:text-white truncate">
-                      {s.titulo}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {s.categoria} · Q{s.precio}
-                    </p>
+                    <p className="text-sm text-gray-900 dark:text-white truncate">{s.title}</p>
+                    <p className="text-xs text-gray-400">{s.category.name} · Q{s.price}</p>
                   </div>
                 </button>
               ))}
             </div>
           )}
 
-          {/* Historial */}
           {history.length > 0 && suggestions.length === 0 && (
             <div>
               <div className="flex items-center justify-between px-4 pt-3 pb-1">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                  Búsquedas recientes
-                </p>
-                <button
-                  onClick={clearHistory}
-                  className="text-[10px] text-primary hover:underline"
-                >
-                  Limpiar
-                </button>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Búsquedas recientes</p>
+                <button onClick={clearHistory} className="text-[10px] text-primary hover:underline">Limpiar</button>
               </div>
               {history.map((h) => (
                 <button
@@ -125,9 +108,7 @@ export function SearchBar({
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
                 >
                   <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {h}
-                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{h}</span>
                 </button>
               ))}
             </div>

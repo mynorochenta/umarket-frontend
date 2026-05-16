@@ -7,13 +7,13 @@ const links = {
     { label: "Feed", href: "/feed" },
     { label: "Categorías", href: "/feed" },
     { label: "Publicaciones destacadas", href: "/feed?destacadas=true" },
-    { label: "Publicar", href: "/publicar" },
+    { label: "Publicar", href: "/new-listing" },
   ],
   Cuenta: [
-    { label: "Mi perfil", href: "/perfil/u1" },
-    { label: "Mis publicaciones", href: "/mis-publicaciones" },
-    { label: "Favoritos", href: "/favoritos" },
-    { label: "Mensajes", href: "/mensajes" },
+    { label: "Mi perfil", href: "/profile/u1" },
+    { label: "Mis publicaciones", href: "/my-listings" },
+    { label: "Favoritos", href: "/favorites" },
+    { label: "Mensajes", href: "/messages" },
   ],
   Ayuda: [
     { label: "Cómo funciona", href: "/#como-funciona" },

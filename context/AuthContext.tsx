@@ -2,15 +2,15 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { apiPost } from "@/lib/api";
-import type { Usuario } from "@/lib/types";
+import type { User } from "@/lib/types";
 
 interface LoginResponse {
   token: string;
-  usuario: Usuario;
+  usuario: User;
 }
 
 interface AuthContextType {
-  usuario: Usuario | null;
+  usuario: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -20,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [usuario, setUsuario] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -5,27 +5,27 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Plus, Eye, Heart, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { CondicionBadge } from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
-import { getPublicacionesPorVendedor } from "@/lib/mock-data";
+import { getListingsBySeller } from "@/lib/mock-data";
 import { pageTransition, staggerContainer, cardItem } from "@/lib/animations";
-import type { Publicacion } from "@/lib/types";
+import type { Listing } from "@/lib/types";
 
 export default function MisPublicacionesPage() {
   const { usuario } = useAuth();
-  const allPubs = usuario ? getPublicacionesPorVendedor(usuario.id) : [];
-  const [publicaciones, setPublicaciones] = useState<Publicacion[]>(allPubs);
+  const allPubs = usuario ? getListingsBySeller(usuario.id) : [];
+  const [publicaciones, setPublicaciones] = useState<Listing[]>(allPubs);
   const [tab, setTab] = useState<"activas" | "pausadas">("activas");
 
-  const activas = publicaciones.filter((p) => p.activa);
-  const pausadas = publicaciones.filter((p) => !p.activa);
+  const activas = publicaciones.filter((p) => p.active);
+  const pausadas = publicaciones.filter((p) => !p.active);
   const displayed = tab === "activas" ? activas : pausadas;
 
-  const toggleActiva = (id: string) =>
-    setPublicaciones((prev) => prev.map((p) => p.id === id ? { ...p, activa: !p.activa } : p));
+  const toggleActiva = (id: number) =>
+    setPublicaciones((prev) => prev.map((p) => p.id === id ? { ...p, active: !p.active } : p));
 
-  const eliminar = (id: string) =>
+  const eliminar = (id: number) =>
     setPublicaciones((prev) => prev.filter((p) => p.id !== id));
 
   return (
@@ -37,12 +37,11 @@ export default function MisPublicacionesPage() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mis publicaciones</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{activas.length} activas · {pausadas.length} pausadas</p>
           </div>
-          <Link href="/publicar" className="flex items-center gap-2 bg-primary text-white font-semibold px-4 py-2.5 rounded-xl text-sm hover:bg-primary-dark transition-colors">
+          <Link href="/new-listing" className="flex items-center gap-2 bg-primary text-white font-semibold px-4 py-2.5 rounded-xl text-sm hover:bg-primary-dark transition-colors">
             <Plus className="w-4 h-4" /> Nueva
           </Link>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-1 bg-gray-200 dark:bg-gray-800 rounded-xl p-1 mb-6 w-fit">
           {(["activas", "pausadas"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
@@ -56,7 +55,7 @@ export default function MisPublicacionesPage() {
             <p className="text-4xl mb-3">📦</p>
             <p className="text-gray-500 dark:text-gray-400 font-medium">No tienes publicaciones {tab}</p>
             {tab === "activas" && (
-              <Link href="/publicar" className="mt-4 inline-flex items-center gap-2 bg-primary text-white font-semibold px-5 py-2.5 rounded-xl text-sm">
+              <Link href="/new-listing" className="mt-4 inline-flex items-center gap-2 bg-primary text-white font-semibold px-5 py-2.5 rounded-xl text-sm">
                 <Plus className="w-4 h-4" /> Publicar ahora
               </Link>
             )}
@@ -66,29 +65,26 @@ export default function MisPublicacionesPage() {
             {displayed.map((p) => (
               <motion.div key={p.id} variants={cardItem}>
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 flex gap-4 items-start">
-                  <Link href={`/publicacion/${p.id}`}>
+                  <Link href={`/listing/${p.id}`}>
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-800">
-                      <Image src={p.imagenes[0]} alt={p.titulo} fill className="object-cover" sizes="80px" />
+                      <Image src={p.imageUrl ?? ""} alt={p.title} fill className="object-cover" sizes="80px" />
                     </div>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/publicacion/${p.id}`}>
-                      <p className="font-semibold text-gray-900 dark:text-white text-sm truncate hover:text-primary">{p.titulo}</p>
+                    <Link href={`/listing/${p.id}`}>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm truncate hover:text-primary">{p.title}</p>
                     </Link>
-                    <p className="text-primary font-bold text-lg">Q{p.precio.toLocaleString()}</p>
+                    <p className="text-primary font-bold text-lg">Q{p.price.toLocaleString()}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <CondicionBadge condicion={p.condicion} size="xs" />
-                      <span className="flex items-center gap-1 text-xs text-gray-400"><Eye className="w-3 h-3" />{p.vistas}</span>
-                      <span className="flex items-center gap-1 text-xs text-gray-400"><Heart className="w-3 h-3" />{p.likes}</span>
+                      <CondicionBadge condicion={p.itemCondition} size="xs" />
                     </div>
                   </div>
-                  {/* Acciones */}
                   <div className="flex flex-col gap-2 flex-shrink-0">
-                    <button onClick={() => toggleActiva(p.id)} className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" title={p.activa ? "Pausar" : "Activar"}>
-                      {p.activa ? <ToggleRight className="w-4 h-4 text-emerald-500" /> : <ToggleLeft className="w-4 h-4" />}
-                      {p.activa ? "Activa" : "Pausada"}
+                    <button onClick={() => toggleActiva(p.id)} className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" title={p.active ? "Pausar" : "Activar"}>
+                      {p.active ? <ToggleRight className="w-4 h-4 text-emerald-500" /> : <ToggleLeft className="w-4 h-4" />}
+                      {p.active ? "Activa" : "Pausada"}
                     </button>
-                    <Link href="/publicar" className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+                    <Link href="/new-listing" className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
                       <Pencil className="w-3.5 h-3.5" /> Editar
                     </Link>
                     <button onClick={() => eliminar(p.id)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-500 transition-colors">

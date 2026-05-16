@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { getConversacionesPorUsuario, getUsuario } from "@/lib/mock-data";
+import { getConversationsByUser, getUserById } from "@/lib/mock-data";
 import { pageTransition, staggerContainer, cardItem } from "@/lib/animations";
 
 function timeShort(date: Date): string {
@@ -19,7 +19,7 @@ function timeShort(date: Date): string {
 
 export default function MensajesPage() {
   const { usuario } = useAuth();
-  const conversaciones = usuario ? getConversacionesPorUsuario(usuario.id) : [];
+  const conversaciones = usuario ? getConversationsByUser(String(usuario.id)) : [];
 
   return (
     <ProtectedRoute>
@@ -43,34 +43,34 @@ export default function MensajesPage() {
         ) : (
           <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-2">
             {conversaciones.map((conv) => {
-              const otroId = conv.participantes.find((id) => id !== usuario?.id)!;
-              const otro = getUsuario(otroId);
+              const otroId = conv.participants.find((id) => id !== String(usuario?.id))!;
+              const otro = getUserById(otroId);
               if (!otro) return null;
 
               return (
                 <motion.div key={conv.id} variants={cardItem}>
-                  <Link href={`/mensajes/${conv.id}`}>
+                  <Link href={`/messages/${conv.id}`}>
                     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 flex items-center gap-3 hover:border-primary/30 hover:shadow-sm transition-all">
                       <div className="relative flex-shrink-0">
-                        <Image src={otro.avatar} alt={otro.nombre} width={48} height={48} className="rounded-full" />
-                        {conv.noLeidos > 0 && (
+                        <Image src={otro.avatar} alt={otro.name} width={48} height={48} className="rounded-full" />
+                        {conv.unreadCount > 0 && (
                           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                            {conv.noLeidos}
+                            {conv.unreadCount}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className={`text-sm font-semibold truncate ${conv.noLeidos > 0 ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
-                            {otro.nombre}
+                          <p className={`text-sm font-semibold truncate ${conv.unreadCount > 0 ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
+                            {otro.name}
                           </p>
-                          <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{timeShort(conv.ultimoMensajeEn)}</span>
+                          <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{timeShort(conv.lastMessageAt)}</span>
                         </div>
-                        {conv.publicacionTitulo && (
-                          <p className="text-[10px] text-primary truncate">{conv.publicacionTitulo}</p>
+                        {conv.listingTitle && (
+                          <p className="text-[10px] text-primary truncate">{conv.listingTitle}</p>
                         )}
-                        <p className={`text-xs truncate mt-0.5 ${conv.noLeidos > 0 ? "text-gray-800 dark:text-gray-200 font-medium" : "text-gray-400"}`}>
-                          {conv.ultimoMensaje}
+                        <p className={`text-xs truncate mt-0.5 ${conv.unreadCount > 0 ? "text-gray-800 dark:text-gray-200 font-medium" : "text-gray-400"}`}>
+                          {conv.lastMessage}
                         </p>
                       </div>
                     </div>

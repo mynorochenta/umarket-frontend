@@ -1,109 +1,78 @@
-export type Condicion = "nuevo" | "bueno" | "regular";
+export type ItemCondition = "new" | "good" | "fair";
 
-export type Categoria =
-  | "Libros"
-  | "Electrónica"
-  | "Ropa"
-  | "Deportes"
-  | "Hogar"
-  | "Arte"
-  | "Música"
-  | "Transporte"
-  | "Servicios"
-  | "Apuntes"
-  | "Comida"
-  | "Otros";
-
-export interface Universidad {
-  id: string;
-  nombre: string;
-  nombreCorto: string;
-  dominio: string;
-  color: string;
-  estudiantesCount: number;
+export interface Category {
+  id?: number;
+  name: string;
+  description?: string;
 }
 
-export interface Usuario {
-  id: string;
-  nombre: string;
+export interface User {
+  id: number;
+  name: string;
   email: string;
-  universidadId: string;
-  universidadNombre: string;
-  universidadCorto: string;
-  avatar: string;
-  bio: string;
-  calificacion: number;
-  resenasCount: number;
-  publicacionesCount: number;
-  joinedAt: Date;
+  university: string;
   verified: boolean;
+  active: boolean;
+  createdAt: string;
 }
 
-export interface Publicacion {
-  id: string;
-  titulo: string;
-  precio: number;
-  descripcion: string;
-  imagenes: string[];
-  categoria: Categoria;
-  condicion: Condicion;
-  vendedor: Usuario;
-  universidadId: string;
-  universidadNombre: string;
-  creadoEn: Date;
-  vistas: number;
-  likes: number;
-  destacada?: boolean;
-  activa: boolean;
+export interface ListingImage {
+  id?: number;
+  url: string;
+  sortOrder: number;
 }
 
-export interface Mensaje {
-  id: string;
-  conversacionId: string;
-  autorId: string;
-  contenido: string;
-  enviadoEn: Date;
-  leido: boolean;
+export interface Listing {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  itemCondition: ItemCondition;
+  imageUrl?: string;
+  active: boolean;
+  publishedAt: string;
+  seller: User;
+  category: Category;
+  images?: ListingImage[];
 }
 
-export interface Conversacion {
-  id: string;
-  participantes: [string, string];
-  publicacionId?: string;
-  publicacionTitulo?: string;
-  ultimoMensaje: string;
-  ultimoMensajeEn: Date;
-  noLeidos: number;
-  mensajes: Mensaje[];
+export interface Message {
+  id: number;
+  content: string;
+  sentAt: string;
+  read: boolean;
+  sender: User;
+  recipient: User;
+  listing: Listing;
 }
 
-export interface Resena {
-  id: string;
-  autorId: string;
-  autor: Usuario;
-  destinatarioId: string;
-  calificacion: number;
-  comentario: string;
-  creadoEn: Date;
+export interface Review {
+  id: number;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  author: User;
+  seller: User;
+  listing: Listing;
 }
 
-export interface Notificacion {
+export interface Notification {
   id: string;
-  tipo: "mensaje" | "favorito" | "resena" | "publicacion" | "verificacion";
-  titulo: string;
-  descripcion: string;
-  leida: boolean;
-  creadoEn: Date;
-  enlace?: string;
+  type: "message" | "favorite" | "review" | "listing" | "verification";
+  title: string;
+  description: string;
+  read: boolean;
+  createdAt: string;
+  link?: string;
   avatar?: string;
 }
 
-export interface FiltrosFeed {
-  categoria?: Categoria;
-  universidadId?: string;
-  precioMin?: number;
-  precioMax?: number;
-  condicion?: Condicion;
-  busqueda?: string;
-  orden?: "reciente" | "precio_asc" | "precio_desc" | "popular";
+export interface FeedFilters {
+  category?: string;
+  universityId?: string;
+  priceMin?: number;
+  priceMax?: number;
+  condition?: ItemCondition;
+  search?: string;
+  order?: "recent" | "price_asc" | "price_desc" | "popular";
 }

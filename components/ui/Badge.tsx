@@ -1,4 +1,4 @@
-import { CheckCircle } from "lucide-react";
+import { ShieldCheck, GraduationCap } from "lucide-react";
 
 interface VerifiedBadgeProps {
   universidad: string;
@@ -21,21 +21,16 @@ export function VerifiedBadge({
 }: VerifiedBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center bg-primary-light text-primary rounded-full font-medium ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full font-medium ${sizeClasses[size]} ${className}`}
     >
-      <CheckCircle className={`${iconSizes[size]} flex-shrink-0`} />
-      {universidad}
+      <ShieldCheck className={`${iconSizes[size]} flex-shrink-0`} />
+      Verificado · {universidad}
     </span>
   );
 }
 
 /* Badge genérico de condición */
-type Condicion = "nuevo" | "bueno" | "regular";
-
-const condicionStyles: Record<
-  Condicion,
-  { label: string; classes: string }
-> = {
+const condicionStyles: Record<string, { label: string; classes: string }> = {
   nuevo: {
     label: "Nuevo",
     classes:
@@ -53,16 +48,42 @@ const condicionStyles: Record<
   },
 };
 
+const CONDICION_FALLBACK = {
+  label: "Usado",
+  classes:
+    "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+};
+
+export function UniversityBadge({
+  universityName,
+  size = "sm",
+  className = "",
+}: {
+  universityName: string;
+  size?: "xs" | "sm" | "md";
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-full font-medium ${sizeClasses[size]} ${className}`}
+    >
+      <GraduationCap className={`${iconSizes[size]} flex-shrink-0`} />
+      {universityName}
+    </span>
+  );
+}
+
 export function CondicionBadge({
   condicion,
   size = "sm",
   className = "",
 }: {
-  condicion: Condicion;
+  condicion: string;
   size?: "xs" | "sm" | "md";
   className?: string;
 }) {
-  const { label, classes } = condicionStyles[condicion];
+  const normalized = condicion?.trim().toLowerCase() ?? "";
+  const { label, classes } = condicionStyles[normalized] ?? CONDICION_FALLBACK;
   return (
     <span
       className={`inline-flex items-center rounded-full font-medium ${sizeClasses[size]} ${classes} ${className}`}

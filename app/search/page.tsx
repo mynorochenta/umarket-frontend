@@ -8,7 +8,7 @@ import { Search, ArrowLeft } from "lucide-react";
 import { PublicacionCard } from "@/components/ui/PublicacionCard";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { useFavorites } from "@/hooks/useFavorites";
-import { publicaciones } from "@/lib/mock-data";
+import { listings } from "@/lib/mock-data";
 import { staggerContainer, pageTransition } from "@/lib/animations";
 
 function BuscarInner() {
@@ -19,20 +19,19 @@ function BuscarInner() {
   const resultados = useMemo(() => {
     if (!q.trim()) return [];
     const lower = q.toLowerCase();
-    return publicaciones.filter(
+    return listings.filter(
       (p) =>
-        p.titulo.toLowerCase().includes(lower) ||
-        p.descripcion.toLowerCase().includes(lower) ||
-        p.categoria.toLowerCase().includes(lower) ||
-        p.universidadNombre.toLowerCase().includes(lower) ||
-        p.vendedor.nombre.toLowerCase().includes(lower)
+        p.title.toLowerCase().includes(lower) ||
+        p.description.toLowerCase().includes(lower) ||
+        p.category.name.toLowerCase().includes(lower) ||
+        p.seller.university.toLowerCase().includes(lower) ||
+        p.seller.name.toLowerCase().includes(lower)
     );
   }, [q]);
 
   return (
     <motion.div variants={pageTransition} initial="initial" animate="animate" className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Link href="/feed" className="w-9 h-9 rounded-xl flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary transition-colors">
             <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -58,7 +57,7 @@ function BuscarInner() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
               >
                 {resultados.map((p) => (
-                  <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(p.id)} onToggleFavorite={toggle} />
+                  <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(String(p.id))} onToggleFavorite={toggle} />
                 ))}
               </motion.div>
             ) : (

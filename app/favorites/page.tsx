@@ -6,12 +6,12 @@ import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { PublicacionCard } from "@/components/ui/PublicacionCard";
 import { useFavorites } from "@/hooks/useFavorites";
-import { publicaciones } from "@/lib/mock-data";
+import { listings } from "@/lib/mock-data";
 import { pageTransition, staggerContainer } from "@/lib/animations";
 
 export default function FavoritosPage() {
   const { favorites, isFavorite, toggle } = useFavorites();
-  const favs = publicaciones.filter((p) => favorites.includes(p.id));
+  const favs = listings.filter((p) => favorites.includes(String(p.id)));
 
   return (
     <ProtectedRoute>
@@ -44,7 +44,7 @@ export default function FavoritosPage() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
           >
             {favs.map((p) => (
-              <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(p.id)} onToggleFavorite={toggle} />
+              <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(String(p.id))} onToggleFavorite={toggle} />
             ))}
           </motion.div>
         )}

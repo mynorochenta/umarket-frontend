@@ -8,9 +8,9 @@ import { fadeInUp, staggerContainer, cardItem } from "@/lib/animations";
 
 const sugerencias = [
   { label: "Ir al Feed", href: "/feed" },
-  { label: "Publicar artículo", href: "/publicar" },
-  { label: "Ver mis favoritos", href: "/favoritos" },
-  { label: "Mis mensajes", href: "/mensajes" },
+  { label: "Publicar artículo", href: "/new-listing" },
+  { label: "Ver mis favoritos", href: "/favorites" },
+  { label: "Mis mensajes", href: "/messages" },
 ];
 
 export default function NotFound() {

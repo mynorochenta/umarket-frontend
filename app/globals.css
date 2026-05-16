@@ -5,33 +5,35 @@
 
 /* Paleta estática — crea utilidades bg-primary, text-accent, etc. */
 @theme {
-  --color-primary: #7c3aed;
-  --color-primary-dark: #5b21b6;
-  --color-primary-light: #ede9fe;
-  --color-primary-50: #f5f3ff;
-  --color-accent: #f97316;
-  --color-accent-dark: #ea580c;
-  --color-accent-light: #fed7aa;
+  --color-primary: #06B6D4;
+  --color-primary-dark: #0891B2;
+  --color-primary-light: #CFFAFE;
+  --color-primary-50: #F0F9FF;
+  --color-accent: #22D3EE;
+  --color-accent-dark: #06B6D4;
+  --color-accent-light: #CFFAFE;
+  --color-verified: #10B981;
+  --color-featured: #F59E0B;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 /* Tokens de superficie que cambian con dark mode */
 :root {
-  --surface: #ffffff;
-  --surface-2: #f9fafb;
-  --surface-3: #f3f4f6;
-  --border: #e5e7eb;
+  --surface: #F0F9FF;
+  --surface-2: #FFFFFF;
+  --surface-3: #E0F2FE;
+  --border: #BAE6FD;
   --text: #111827;
   --text-2: #6b7280;
   --text-3: #9ca3af;
 }
 
 .dark {
-  --surface: #0f0f13;
-  --surface-2: #1a1a24;
-  --surface-3: #252535;
-  --border: #2d2d42;
+  --surface: #0A0F1E;
+  --surface-2: #111827;
+  --surface-3: #1F2937;
+  --border: #1E3A5F;
   --text: #f9fafb;
   --text-2: #9ca3af;
   --text-3: #6b7280;

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { PublicacionCard } from "@/components/ui/PublicacionCard";
 import { useFavorites } from "@/hooks/useFavorites";
-import { publicacionesDestacadas, universidades } from "@/lib/mock-data";
+import { featuredListings, universities } from "@/lib/mock-data";
 import { staggerContainer, cardItem, revealSection } from "@/lib/animations";
 
 const categoriasData = [
@@ -112,7 +112,7 @@ export default function LandingPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/registro"
+                href="/register"
                 className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold px-6 py-3.5 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
               >
                 Crear cuenta gratis
@@ -211,8 +211,8 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
           >
-            {publicacionesDestacadas.slice(0, 8).map((p) => (
-              <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(p.id)} onToggleFavorite={toggle} />
+            {featuredListings.slice(0, 8).map((p) => (
+              <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(String(p.id))} onToggleFavorite={toggle} />
             ))}
           </motion.div>
           <div className="mt-8 flex justify-center sm:hidden">
@@ -266,13 +266,13 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="grid grid-cols-2 sm:grid-cols-4 gap-4"
           >
-            {universidades.map((uni) => (
+            {universities.map((uni) => (
               <motion.div key={uni.id} variants={cardItem} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 hover:border-primary/40 transition-colors">
                 <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center text-white font-black text-sm" style={{ backgroundColor: uni.color }}>
-                  {uni.nombreCorto.slice(0, 2)}
+                  {uni.shortName.slice(0, 2)}
                 </div>
-                <p className="text-xs font-semibold text-gray-900 dark:text-white">{uni.nombreCorto}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{uni.estudiantesCount.toLocaleString()} estudiantes</p>
+                <p className="text-xs font-semibold text-gray-900 dark:text-white">{uni.shortName}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{uni.studentCount.toLocaleString()} estudiantes</p>
               </motion.div>
             ))}
           </motion.div>
@@ -292,7 +292,7 @@ export default function LandingPage() {
               <h2 className="text-3xl font-black text-white mb-3">¿Listo para unirte?</h2>
               <p className="text-white/80 mb-7 max-w-md mx-auto">Regístrate con tu email universitario y empieza a comprar y vender en minutos.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/registro" className="flex items-center justify-center gap-2 bg-white text-primary font-bold px-6 py-3 rounded-2xl hover:bg-gray-50 transition-colors text-sm">
+                <Link href="/register" className="flex items-center justify-center gap-2 bg-white text-primary font-bold px-6 py-3 rounded-2xl hover:bg-gray-50 transition-colors text-sm">
                   Crear cuenta gratis <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/feed" className="flex items-center justify-center gap-2 bg-white/10 text-white font-semibold px-6 py-3 rounded-2xl hover:bg-white/20 transition-colors text-sm border border-white/20">

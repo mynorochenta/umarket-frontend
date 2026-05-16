@@ -1,6 +1,6 @@
 export function SkeletonCard() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 animate-pulse">
+    <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-cyan-100 dark:border-gray-700 animate-pulse">
       <div className="aspect-[4/3] bg-gray-200 dark:bg-gray-700" />
       <div className="p-4 space-y-3">
         <div className="space-y-2">
@@ -20,7 +20,7 @@ export function SkeletonCard() {
 
 export function SkeletonGrid({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
       {Array.from({ length: count }, (_, i) => (
         <SkeletonCard key={i} />
       ))}

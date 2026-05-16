@@ -6,24 +6,24 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Bell, MessageSquare, Heart, Star, ShoppingBag, CheckCircle, Check } from "lucide-react";
-import { notificaciones as mockNotifs } from "@/lib/mock-data";
+import { notifications as mockNotifs } from "@/lib/mock-data";
 import { pageTransition, staggerContainer, cardItem } from "@/lib/animations";
-import type { Notificacion } from "@/lib/types";
+import type { Notification } from "@/lib/types";
 
-const tipoIcono: Record<Notificacion["tipo"], React.ElementType> = {
-  mensaje: MessageSquare,
-  favorito: Heart,
-  resena: Star,
-  publicacion: ShoppingBag,
-  verificacion: CheckCircle,
+const tipoIcono: Record<Notification["type"], React.ElementType> = {
+  message: MessageSquare,
+  favorite: Heart,
+  review: Star,
+  listing: ShoppingBag,
+  verification: CheckCircle,
 };
 
-const tipoColor: Record<Notificacion["tipo"], string> = {
-  mensaje: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-  favorito: "bg-red-100 dark:bg-red-900/30 text-red-500",
-  resena: "bg-amber-100 dark:bg-amber-900/30 text-amber-500",
-  publicacion: "bg-primary-light dark:bg-primary/20 text-primary",
-  verificacion: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500",
+const tipoColor: Record<Notification["type"], string> = {
+  message: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+  favorite: "bg-red-100 dark:bg-red-900/30 text-red-500",
+  review: "bg-amber-100 dark:bg-amber-900/30 text-amber-500",
+  listing: "bg-primary-light dark:bg-primary/20 text-primary",
+  verification: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500",
 };
 
 function timeAgo(date: Date): string {
@@ -36,10 +36,10 @@ function timeAgo(date: Date): string {
 
 export default function NotificacionesPage() {
   const [notifs, setNotifs] = useState(mockNotifs);
-  const unread = notifs.filter((n) => !n.leida).length;
+  const unread = notifs.filter((n) => !n.read).length;
 
-  const marcarTodas = () => setNotifs((prev) => prev.map((n) => ({ ...n, leida: true })));
-  const marcarLeida = (id: string) => setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, leida: true } : n));
+  const marcarTodas = () => setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+  const marcarLeida = (id: string) => setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
 
   return (
     <ProtectedRoute>
@@ -69,39 +69,39 @@ export default function NotificacionesPage() {
 
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-2">
           {notifs.map((n) => {
-            const Icon = tipoIcono[n.tipo];
-            const Wrapper = n.enlace ? Link : "div";
-            const wrapperProps = n.enlace ? { href: n.enlace, onClick: () => marcarLeida(n.id) } : {};
+            const Icon = tipoIcono[n.type];
+            const Wrapper = n.link ? Link : "div";
+            const wrapperProps = n.link ? { href: n.link, onClick: () => marcarLeida(n.id) } : {};
 
             return (
               <motion.div key={n.id} variants={cardItem}>
                 {/* @ts-expect-error: dynamic tag */}
                 <Wrapper {...wrapperProps}>
                   <div className={`flex items-start gap-3 p-4 rounded-2xl border transition-all ${
-                    n.leida
+                    n.read
                       ? "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800"
                       : "bg-primary-50 dark:bg-primary/5 border-primary/20"
-                  } ${n.enlace ? "hover:border-primary/40 hover:shadow-sm cursor-pointer" : ""}`}
+                  } ${n.link ? "hover:border-primary/40 hover:shadow-sm cursor-pointer" : ""}`}
                     onClick={() => marcarLeida(n.id)}
                   >
                     {/* Avatar o ícono */}
                     {n.avatar ? (
                       <Image src={n.avatar} alt="" width={40} height={40} className="rounded-full flex-shrink-0" />
                     ) : (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${tipoColor[n.tipo]}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${tipoColor[n.type]}`}>
                         <Icon className="w-4.5 h-4.5" />
                       </div>
                     )}
 
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${n.leida ? "text-gray-700 dark:text-gray-300" : "text-gray-900 dark:text-white"}`}>
-                        {n.titulo}
+                      <p className={`text-sm font-semibold ${n.read ? "text-gray-700 dark:text-gray-300" : "text-gray-900 dark:text-white"}`}>
+                        {n.title}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{n.descripcion}</p>
-                      <p className="text-[10px] text-gray-400 mt-1">{timeAgo(n.creadoEn)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{n.description}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{timeAgo(new Date(n.createdAt))}</p>
                     </div>
 
-                    {!n.leida && (
+                    {!n.read && (
                       <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1.5" />
                     )}
                   </div>

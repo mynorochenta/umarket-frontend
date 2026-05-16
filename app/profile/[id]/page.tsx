@@ -9,7 +9,7 @@ import { VerifiedBadge } from "@/components/ui/Badge";
 import { StarRating } from "@/components/ui/StarRating";
 import { PublicacionCard } from "@/components/ui/PublicacionCard";
 import { useFavorites } from "@/hooks/useFavorites";
-import { getUsuario, getPublicacionesPorVendedor, getResenasPorDestinatario } from "@/lib/mock-data";
+import { getUserById, getListingsBySeller, getReviewsByRecipient } from "@/lib/mock-data";
 import { pageTransition, staggerContainer, cardItem } from "@/lib/animations";
 
 function timeAgo(date: Date): string {
@@ -22,13 +22,13 @@ function timeAgo(date: Date): string {
 
 export default function PerfilPage() {
   const params = useParams<{ id: string }>();
-  const usuario = getUsuario(params.id);
+  const usuario = getUserById(params.id);
   const { isFavorite, toggle } = useFavorites();
 
   if (!usuario) return notFound();
 
-  const publicacionesActivas = getPublicacionesPorVendedor(params.id);
-  const resenas = getResenasPorDestinatario(params.id);
+  const publicacionesActivas = getListingsBySeller(params.id);
+  const resenas = getReviewsByRecipient(params.id);
 
   return (
     <motion.div variants={pageTransition} initial="initial" animate="animate" className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -42,7 +42,7 @@ export default function PerfilPage() {
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12">
               <div className="flex items-end gap-4">
                 <div className="relative">
-                  <Image src={usuario.avatar} alt={usuario.nombre} width={80} height={80} className="rounded-2xl border-4 border-white dark:border-gray-900 shadow" />
+                  <Image src={usuario.avatar} alt={usuario.name} width={80} height={80} className="rounded-2xl border-4 border-white dark:border-gray-900 shadow" />
                   {usuario.verified && (
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                       <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -52,12 +52,12 @@ export default function PerfilPage() {
                   )}
                 </div>
                 <div className="mb-1">
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">{usuario.nombre}</h1>
-                  <VerifiedBadge universidad={usuario.universidadNombre} size="sm" />
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">{usuario.name}</h1>
+                  <VerifiedBadge universidad={usuario.universityName} size="sm" />
                 </div>
               </div>
               <Link
-                href="/mensajes/c1"
+                href="/messages/c1"
                 className="flex items-center gap-2 bg-primary text-white font-semibold px-4 py-2.5 rounded-xl text-sm hover:bg-primary-dark transition-colors"
               >
                 <MessageSquare className="w-4 h-4" />
@@ -74,12 +74,12 @@ export default function PerfilPage() {
               </div>
               <div className="flex items-center gap-1.5">
                 <ShoppingBag className="w-4 h-4" />
-                {usuario.publicacionesCount} publicaciones
+                {usuario.listingCount} publicaciones
               </div>
               <div className="flex items-center gap-1.5">
-                <StarRating rating={usuario.calificacion} size="sm" />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">{usuario.calificacion}</span>
-                <span className="text-xs">({usuario.resenasCount} reseñas)</span>
+                <StarRating rating={usuario.rating} size="sm" />
+                <span className="font-semibold text-gray-700 dark:text-gray-300">{usuario.rating}</span>
+                <span className="text-xs">({usuario.reviewCount} reseñas)</span>
               </div>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function PerfilPage() {
             {publicacionesActivas.length > 0 ? (
               <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {publicacionesActivas.map((p) => (
-                  <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(p.id)} onToggleFavorite={toggle} />
+                  <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(String(p.id))} onToggleFavorite={toggle} />
                 ))}
               </motion.div>
             ) : (
@@ -114,13 +114,13 @@ export default function PerfilPage() {
                 resenas.map((r) => (
                   <motion.div key={r.id} variants={cardItem} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Image src={r.autor.avatar} alt={r.autor.nombre} width={28} height={28} className="rounded-full" />
+                      <Image src={r.author.avatar} alt={r.author.name} width={28} height={28} className="rounded-full" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{r.autor.nombre}</p>
-                        <StarRating rating={r.calificacion} size="xs" />
+                        <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{r.author.name}</p>
+                        <StarRating rating={r.rating} size="xs" />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{r.comentario}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{r.comment}</p>
                   </motion.div>
                 ))
               ) : (

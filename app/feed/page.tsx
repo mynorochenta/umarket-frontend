@@ -1,292 +1,466 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, useEffect, useRef, Suspense } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutGrid, List, SlidersHorizontal, X, ChevronDown, Loader2,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { LayoutGrid, List, Search, ChevronDown, X, Loader2 } from "lucide-react";
 import { PublicacionCard } from "@/components/ui/PublicacionCard";
 import { SkeletonGrid } from "@/components/ui/SkeletonCard";
 import { PriceSlider } from "@/components/ui/PriceSlider";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { universidades } from "@/lib/mock-data";
-import { staggerContainer, pageTransition } from "@/lib/animations";
-import type { Categoria, Condicion, FiltrosFeed, Publicacion } from "@/lib/types";
+import { universities } from "@/lib/mock-data";
+import { staggerContainer } from "@/lib/animations";
+import type { FeedFilters, Listing } from "@/lib/types";
 import { apiGet } from "@/lib/api";
 
-const categorias: Categoria[] = [
-  "Libros","Electrónica","Ropa","Deportes","Hogar",
-  "Arte","Música","Transporte","Servicios","Apuntes","Comida","Otros",
+const categorias: string[] = [
+  "Books", "Electronics", "Clothing", "Sports", "Home",
+  "Art", "Music", "Transport", "Services", "Notes", "Food", "Other",
 ];
 
-const condiciones: { value: Condicion; label: string }[] = [
-  { value: "nuevo", label: "Nuevo" },
-  { value: "bueno", label: "Buen estado" },
-  { value: "regular", label: "Regular" },
+const condiciones = [
+  { value: "new",  label: "New" },
+  { value: "good", label: "Good" },
+  { value: "fair", label: "Fair" },
 ];
 
 const ordenOpciones = [
-  { value: "reciente", label: "Más recientes" },
-  { value: "precio_asc", label: "Precio: menor a mayor" },
-  { value: "precio_desc", label: "Precio: mayor a menor" },
-  { value: "popular", label: "Más populares" },
+  { value: "recent",     label: "Most recent" },
+  { value: "price_asc",  label: "Lowest price" },
+  { value: "price_desc", label: "Highest price" },
+  { value: "popular",    label: "Most popular" },
 ];
+
+function chipCls(active: boolean) {
+  return (
+    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap cursor-pointer select-none " +
+    (active
+      ? "bg-cyan-500 text-white border border-cyan-500"
+      : "bg-transparent text-gray-700 dark:text-gray-300 border border-cyan-200 dark:border-gray-700 hover:border-cyan-400 dark:hover:border-cyan-500")
+  );
+}
+
+type Pos = { top: number; left: number };
 
 function FeedInner() {
   const searchParams = useSearchParams();
   const { isFavorite, toggle } = useFavorites();
   const [vista, setVista] = useState<"grid" | "list">("grid");
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(false);
-  const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
+  const [publicaciones, setPublicaciones] = useState<Listing[]>([]);
+  const [mounted, setMounted] = useState(false);
 
-  const [filtros, setFiltros] = useState<FiltrosFeed>({
-    categoria: (searchParams.get("categoria") as Categoria) || undefined,
-    orden: "reciente",
-    precioMin: 0,
-    precioMax: 10000,
+  const [filtros, setFiltros] = useState<FeedFilters>({
+    category: searchParams.get("categoria") || undefined,
+    order: "recent",
+    priceMin: 0,
+    priceMax: 10000,
   });
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [condicionesActivas, setCondicionesActivas] = useState<Set<string>>(new Set());
+
+  const [categoriaOpen, setCategoriaOpen] = useState(false);
+  const [precioOpen, setPrecioOpen] = useState(false);
+  const [universidadOpen, setUniversidadOpen] = useState(false);
+  const [uniSearch, setUniSearch] = useState("");
+
+  const [categoriaPos, setCategoriaPos] = useState<Pos>({ top: 0, left: 0 });
+  const [precioPos, setPrecioPos] = useState<Pos>({ top: 0, left: 0 });
+  const [universidadPos, setUniversidadPos] = useState<Pos>({ top: 0, left: 0 });
+
+  const categoriaBtnRef = useRef<HTMLButtonElement>(null);
+  const precioBtnRef = useRef<HTMLButtonElement>(null);
+  const universidadBtnRef = useRef<HTMLButtonElement>(null);
+
+  const categoriaPanelRef = useRef<HTMLDivElement>(null);
+  const precioPanelRef = useRef<HTMLDivElement>(null);
+  const universidadPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  const measure = (ref: React.RefObject<HTMLButtonElement | null>): Pos => {
+    if (!ref.current) return { top: 0, left: 0 };
+    const r = ref.current.getBoundingClientRect();
+    return { top: r.bottom + 8, left: r.left };
+  };
+
+  const openCategoria = () => {
+    setCategoriaPos(measure(categoriaBtnRef));
+    setCategoriaOpen((v) => !v);
+    setPrecioOpen(false);
+    setUniversidadOpen(false);
+  };
+  const openPrecio = () => {
+    setPrecioPos(measure(precioBtnRef));
+    setPrecioOpen((v) => !v);
+    setCategoriaOpen(false);
+    setUniversidadOpen(false);
+  };
+  const openUniversidad = () => {
+    setUniversidadPos(measure(universidadBtnRef));
+    setUniversidadOpen((v) => !v);
+    setCategoriaOpen(false);
+    setPrecioOpen(false);
+  };
 
   useEffect(() => {
-    apiGet<Publicacion[]>("/api/listings")
-      .then((data) => {
-        setPublicaciones(
-          data.map((p) => ({
-            ...p,
-            creadoEn: new Date(p.creadoEn),
-            vendedor: { ...p.vendedor, joinedAt: new Date(p.vendedor.joinedAt) },
-          }))
-        );
-      })
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (categoriaOpen && !categoriaPanelRef.current?.contains(t) && !categoriaBtnRef.current?.contains(t))
+        setCategoriaOpen(false);
+      if (precioOpen && !precioPanelRef.current?.contains(t) && !precioBtnRef.current?.contains(t))
+        setPrecioOpen(false);
+      if (universidadOpen && !universidadPanelRef.current?.contains(t) && !universidadBtnRef.current?.contains(t)) {
+        setUniversidadOpen(false);
+        setUniSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [categoriaOpen, precioOpen, universidadOpen]);
+
+  useEffect(() => {
+    apiGet<Listing[]>("/api/listings")
+      .then((data) => setPublicaciones(data))
       .catch(() => setApiError(true))
       .finally(() => setLoading(false));
   }, []);
 
+  const universidadesFiltradas = useMemo(
+    () =>
+      universities.filter(
+        (u) =>
+          uniSearch === "" ||
+          u.shortName.toLowerCase().includes(uniSearch.toLowerCase()) ||
+          u.name.toLowerCase().includes(uniSearch.toLowerCase())
+      ),
+    [uniSearch]
+  );
+
   const filtradas = useMemo(() => {
     let result = [...publicaciones];
-    if (filtros.categoria) result = result.filter((p) => p.categoria === filtros.categoria);
-    if (filtros.universidadId) result = result.filter((p) => p.universidadId === filtros.universidadId);
-    if (filtros.condicion) result = result.filter((p) => p.condicion === filtros.condicion);
-    result = result.filter((p) => p.precio >= priceRange[0] && p.precio <= priceRange[1]);
-    switch (filtros.orden) {
-      case "precio_asc": return result.sort((a, b) => a.precio - b.precio);
-      case "precio_desc": return result.sort((a, b) => b.precio - a.precio);
-      case "popular": return result.sort((a, b) => b.vistas - a.vistas);
-      default: return result.sort((a, b) => b.creadoEn.getTime() - a.creadoEn.getTime());
+    if (filtros.category)
+      result = result.filter((p) => p.category.name === filtros.category);
+    if (filtros.universityId)
+      result = result.filter((p) => p.seller.university === filtros.universityId);
+    if (condicionesActivas.size > 0)
+      result = result.filter((p) => condicionesActivas.has(p.itemCondition?.toLowerCase() ?? ""));
+    result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    switch (filtros.order) {
+      case "price_asc":  return result.sort((a, b) => a.price - b.price);
+      case "price_desc": return result.sort((a, b) => b.price - a.price);
+      default:           return result.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
     }
-  }, [filtros, priceRange, publicaciones]);
+  }, [filtros, priceRange, publicaciones, condicionesActivas]);
 
   const { displayed, hasMore, isLoading: loadingMore, sentinelRef } = useInfiniteScroll(filtradas, 12);
 
+  const priceActive = priceRange[0] > 0 || priceRange[1] < 10000;
   const activeFiltersCount = [
-    filtros.categoria, filtros.universidadId, filtros.condicion,
-    priceRange[0] > 0 || priceRange[1] < 10000 ? "price" : undefined,
+    filtros.category,
+    filtros.universityId,
+    condicionesActivas.size > 0 ? "cond" : undefined,
+    priceActive ? "price" : undefined,
   ].filter(Boolean).length;
 
   const clearFiltros = () => {
-    setFiltros({ orden: "reciente", precioMin: 0, precioMax: 10000 });
+    setFiltros({ order: "recent", priceMin: 0, priceMax: 10000 });
     setPriceRange([0, 10000]);
+    setCondicionesActivas(new Set());
   };
 
-  return (
-    <motion.div variants={pageTransition} initial="initial" animate="animate" className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  const toggleCondicion = (val: string) => {
+    setCondicionesActivas((prev) => {
+      const next = new Set(prev);
+      next.has(val) ? next.delete(val) : next.add(val);
+      return next;
+    });
+  };
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {filtros.categoria ?? "Todas las publicaciones"}
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              {filtradas.length} resultados
-            </p>
-          </div>
-          <SearchBar className="sm:w-72" compact />
+  const panelBase =
+    "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl";
+
+  const categoriaPanel = mounted && categoriaOpen && createPortal(
+    <div
+      ref={categoriaPanelRef}
+      style={{ position: "fixed", top: categoriaPos.top, left: categoriaPos.left, zIndex: 9999 }}
+      className={`${panelBase} p-2 min-w-[180px] max-h-64 overflow-y-auto`}
+    >
+      {categorias.map((cat) => (
+        <button
+          key={cat}
+          onClick={() => {
+            setFiltros((f: FeedFilters) => ({ ...f, category: f.category === cat ? undefined : cat }));
+            setCategoriaOpen(false);
+          }}
+          className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+            filtros.category === cat
+              ? "bg-cyan-500 text-white"
+              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          }`}
+        >
+          {cat}
+        </button>
+      ))}
+    </div>,
+    document.body
+  );
+
+  const precioPanel = mounted && precioOpen && createPortal(
+    <div
+      ref={precioPanelRef}
+      style={{ position: "fixed", top: precioPos.top, left: precioPos.left, zIndex: 9999 }}
+      className={`${panelBase} p-5 w-72`}
+    >
+      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+        Price range
+      </p>
+      <PriceSlider value={priceRange} onChange={setPriceRange} max={10000} step={50} />
+    </div>,
+    document.body
+  );
+
+  const universidadPanel = mounted && universidadOpen && createPortal(
+    <div
+      ref={universidadPanelRef}
+      style={{ position: "fixed", top: universidadPos.top, left: universidadPos.left, zIndex: 9999 }}
+      className={`${panelBase} w-64`}
+    >
+      <div className="p-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-xl px-3 py-2">
+          <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <input
+            autoFocus
+            value={uniSearch}
+            onChange={(e) => setUniSearch(e.target.value)}
+            placeholder="Search university…"
+            className="bg-transparent text-sm outline-none text-gray-700 dark:text-gray-300 placeholder-gray-400 w-full"
+          />
         </div>
-
-        {/* Toolbar */}
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
-          {/* Filtros toggle */}
+      </div>
+      <div className="max-h-56 overflow-y-auto p-2">
+        {universidadesFiltradas.map((u) => (
           <button
-            onClick={() => setFiltersOpen((v) => !v)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors flex-shrink-0 ${
-              filtersOpen || activeFiltersCount > 0
-                ? "bg-primary text-white"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+            key={u.id}
+            onClick={() => {
+              setFiltros((f: FeedFilters) => ({
+                ...f,
+                universityId: f.universityId === u.shortName ? undefined : u.shortName,
+              }));
+              setUniversidadOpen(false);
+              setUniSearch("");
+            }}
+            className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+              filtros.universityId === u.shortName
+                ? "bg-cyan-500 text-white"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             }`}
           >
-            <SlidersHorizontal className="w-4 h-4" />
-            Filtros
-            {activeFiltersCount > 0 && (
-              <span className="bg-white/20 text-xs rounded-full w-4 h-4 flex items-center justify-center">{activeFiltersCount}</span>
-            )}
+            <span className="font-medium">{u.shortName}</span>
+            <span className={`ml-1.5 text-xs ${filtros.universityId === u.shortName ? "text-white/70" : "text-gray-400"}`}>
+              {u.name}
+            </span>
           </button>
+        ))}
+        {universidadesFiltradas.length === 0 && (
+          <p className="text-sm text-gray-400 text-center py-4">No results</p>
+        )}
+      </div>
+    </div>,
+    document.body
+  );
 
-          {/* Orden */}
-          <div className="relative flex-shrink-0">
-            <select
-              value={filtros.orden}
-              onChange={(e) => setFiltros((f) => ({ ...f, orden: e.target.value as FiltrosFeed["orden"] }))}
-              className="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:border-primary"
-            >
-              {ordenOpciones.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-          </div>
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
 
-          {/* Chips de categorías */}
-          {categorias.map((cat) => (
+      {/* ── STICKY FILTER BAR ─────────────────────────────────────── */}
+      <div className="sticky top-16 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 py-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+
+            {/* Category */}
             <button
-              key={cat}
-              onClick={() => setFiltros((f) => ({ ...f, categoria: f.categoria === cat ? undefined : cat }))}
-              className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
-                filtros.categoria === cat
-                  ? "bg-primary text-white"
-                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary"
-              }`}
+              ref={categoriaBtnRef}
+              onClick={openCategoria}
+              className={chipCls(!!filtros.category)}
             >
-              {cat}
+              {filtros.category ?? "Category"}
+              {filtros.category ? (
+                <X
+                  className="w-3 h-3"
+                  onClick={(e) => { e.stopPropagation(); setFiltros((f: FeedFilters) => ({ ...f, category: undefined })); }}
+                />
+              ) : (
+                <ChevronDown className="w-3 h-3" />
+              )}
             </button>
-          ))}
 
-          {activeFiltersCount > 0 && (
-            <button onClick={clearFiltros} className="flex-shrink-0 flex items-center gap-1 text-xs text-red-500 hover:text-red-600 ml-auto">
-              <X className="w-3.5 h-3.5" /> Limpiar
-            </button>
-          )}
-        </div>
-
-        <div className="flex gap-6">
-          {/* ── PANEL DE FILTROS (desktop) ─────────────────────────────── */}
-          <AnimatePresence>
-            {filtersOpen && (
-              <motion.aside
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 260 }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.25 }}
-                className="hidden lg:block flex-shrink-0 overflow-hidden"
+            {/* Condition — multi-select chips */}
+            {condiciones.map((c) => (
+              <button
+                key={c.value}
+                onClick={() => toggleCondicion(c.value)}
+                className={`${chipCls(condicionesActivas.has(c.value))} flex-shrink-0`}
               >
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-6 sticky top-24 w-[260px]">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Filtros</h3>
-                    {activeFiltersCount > 0 && (
-                      <button onClick={clearFiltros} className="text-xs text-red-500 hover:underline">Limpiar todo</button>
-                    )}
-                  </div>
+                {c.label}
+              </button>
+            ))}
 
-                  {/* Universidad */}
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Universidad</h4>
-                    <div className="space-y-1">
-                      {universidades.map((u) => (
-                        <label key={u.id} className="flex items-center gap-2 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name="universidad"
-                            checked={filtros.universidadId === u.id}
-                            onChange={() => setFiltros((f) => ({ ...f, universidadId: f.universidadId === u.id ? undefined : u.id }))}
-                            className="accent-primary"
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-primary">{u.nombreCorto}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+            {/* Price */}
+            <button
+              ref={precioBtnRef}
+              onClick={openPrecio}
+              className={chipCls(priceActive)}
+            >
+              {priceActive ? `Q${priceRange[0]}–Q${priceRange[1]}` : "Price"}
+              <ChevronDown className="w-3 h-3" />
+            </button>
 
-                  {/* Condición */}
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Condición</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {condiciones.map((c) => (
-                        <button
-                          key={c.value}
-                          onClick={() => setFiltros((f) => ({ ...f, condicion: f.condicion === c.value ? undefined : c.value }))}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                            filtros.condicion === c.value
-                              ? "bg-primary text-white"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-primary-light hover:text-primary"
-                          }`}
-                        >
-                          {c.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            {/* University */}
+            <button
+              ref={universidadBtnRef}
+              onClick={openUniversidad}
+              className={chipCls(!!filtros.universityId)}
+            >
+              {filtros.universityId ?? "University"}
+              {filtros.universityId ? (
+                <X
+                  className="w-3 h-3"
+                  onClick={(e) => { e.stopPropagation(); setFiltros((f: FeedFilters) => ({ ...f, universityId: undefined })); }}
+                />
+              ) : (
+                <ChevronDown className="w-3 h-3" />
+              )}
+            </button>
 
-                  {/* Precio */}
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Rango de precio</h4>
-                    <PriceSlider value={priceRange} onChange={setPriceRange} max={10000} step={50} />
-                  </div>
-                </div>
-              </motion.aside>
+            {/* Clear */}
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearFiltros}
+                className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+              >
+                <X className="w-3 h-3" /> Clear
+              </button>
             )}
-          </AnimatePresence>
 
-          {/* ── GRID/LISTA ─────────────────────────────────────────────── */}
-          <div className="flex-1 min-w-0">
-            {/* Toggle vista */}
-            <div className="flex justify-end mb-4">
-              <div className="flex bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 gap-0.5">
-                <button onClick={() => setVista("grid")} className={`p-1.5 rounded-lg transition-colors ${vista === "grid" ? "bg-primary text-white" : "text-gray-400 hover:text-gray-600"}`}>
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button onClick={() => setVista("list")} className={`p-1.5 rounded-lg transition-colors ${vista === "list" ? "bg-primary text-white" : "text-gray-400 hover:text-gray-600"}`}>
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
+            <div className="flex-1 min-w-4" />
+
+            {/* Grid / list toggle */}
+            <div className="flex-shrink-0 flex items-center gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-full p-1">
+              <button
+                onClick={() => setVista("grid")}
+                className={`p-1.5 rounded-full transition-colors ${
+                  vista === "grid"
+                    ? "bg-white dark:bg-gray-700 text-cyan-600 shadow-sm"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setVista("list")}
+                className={`p-1.5 rounded-full transition-colors ${
+                  vista === "list"
+                    ? "bg-white dark:bg-gray-700 text-cyan-600 shadow-sm"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
             </div>
-
-            {apiError ? (
-              <div className="text-center py-20">
-                <p className="text-4xl mb-3">⚠️</p>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">No se pudo cargar el feed</p>
-                <p className="text-xs text-gray-400 mt-1">Verifica que el servidor esté corriendo en localhost:8080</p>
-              </div>
-            ) : loading ? (
-              <SkeletonGrid count={12} />
-            ) : filtradas.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-4xl mb-3">🔍</p>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">No hay publicaciones con estos filtros</p>
-                <button onClick={clearFiltros} className="mt-3 text-sm text-primary hover:underline">Limpiar filtros</button>
-              </div>
-            ) : (
-              <>
-                <motion.div
-                  variants={staggerContainer}
-                  initial="initial"
-                  animate="animate"
-                  className={vista === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-                    : "flex flex-col gap-3"
-                  }
-                >
-                  {displayed.map((p) => (
-                    <PublicacionCard key={p.id} publicacion={p} isFavorite={isFavorite(p.id)} onToggleFavorite={toggle} variant={vista} />
-                  ))}
-                </motion.div>
-
-                {/* Sentinel para infinite scroll */}
-                <div ref={sentinelRef} className="h-8 mt-6 flex items-center justify-center">
-                  {loadingMore && <Loader2 className="w-5 h-5 text-primary animate-spin" />}
-                  {!hasMore && displayed.length > 12 && (
-                    <p className="text-xs text-gray-400">Has visto todas las publicaciones</p>
-                  )}
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
-    </motion.div>
+
+      {/* Portal panels */}
+      {categoriaPanel}
+      {precioPanel}
+      {universidadPanel}
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* ── RESULTS COUNT + SORT ─────────────────────────────── */}
+        <div className="flex items-center justify-between py-3 mb-1">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {loading ? "Loading…" : `${filtradas.length} listings found`}
+          </span>
+          <select
+            value={filtros.order}
+            onChange={(e) => setFiltros((f: FeedFilters) => ({ ...f, order: e.target.value as FeedFilters["order"] }))}
+            className="text-sm text-gray-700 dark:text-gray-300 bg-transparent border-none outline-none cursor-pointer"
+          >
+            {ordenOpciones.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* ── MAIN CONTENT ─────────────────────────────────────── */}
+        {apiError ? (
+          <div className="text-center py-24">
+            <p className="text-5xl mb-4">⚠️</p>
+            <p className="text-gray-700 dark:text-gray-300 font-semibold text-lg mb-1">Could not load feed</p>
+            <p className="text-sm text-gray-400">Make sure the server is running on localhost:8080</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-5 px-5 py-2 bg-cyan-500 text-white rounded-full text-sm font-medium hover:bg-cyan-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : loading ? (
+          <SkeletonGrid count={12} />
+        ) : filtradas.length === 0 ? (
+          <div className="flex flex-col items-center py-24">
+            <Search className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-700 dark:text-gray-300 font-semibold text-lg">Nothing found</p>
+            <p className="text-sm text-gray-400 mt-1">Try different filters</p>
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearFiltros}
+                className="mt-5 px-5 py-2 bg-cyan-500 text-white rounded-full text-sm font-medium hover:bg-cyan-600 transition-colors"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className={
+                vista === "grid"
+                  ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
+                  : "flex flex-col gap-3"
+              }
+            >
+              {displayed.map((p) => (
+                <PublicacionCard
+                  key={p.id}
+                  publicacion={p}
+                  isFavorite={isFavorite(String(p.id))}
+                  onToggleFavorite={toggle}
+                  variant={vista}
+                />
+              ))}
+            </motion.div>
+
+            <div ref={sentinelRef} className="h-10 mt-6 flex items-center justify-center pb-8">
+              {loadingMore && <Loader2 className="w-5 h-5 text-cyan-500 animate-spin" />}
+              {!hasMore && displayed.length > 12 && (
+                <p className="text-xs text-gray-400">You&apos;ve seen all listings</p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

@@ -22,7 +22,20 @@
       "Bash(sed -n '44,45p' \"C:/Users/mynor/IdeaProjects/umarket-frontend-v2/app/notificaciones/page.tsx\")",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git remote *)",
+      "Read(//mnt/c/Users/mynor/**)",
+      "Read(//mnt/c/Users/**)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:8080/api/listings\" -UseBasicParsing -TimeoutSec 5; \"STATUS: $\\($r.StatusCode\\)\"; $r.Content } catch { \"ERROR: $_\" })",
+      "PowerShell(netstat *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:8080/api/listings\" -UseBasicParsing -TimeoutSec 5; \"STATUS: $\\($r.StatusCode\\)\"; $r.Content } catch { \"ERROR: $\\($_.Exception.Message\\)\" })",
+      "mcp__plugin_context-mode_context-mode__ctx_execute",
+      "Bash(Get-ChildItem app *)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(mv mensajes *)",
+      "Bash(mv publicacion *)",
+      "Bash(mv perfil *)",
+      "PowerShell(Remove-Item *)"
     ]
   }
 }

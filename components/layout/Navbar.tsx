@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun,
@@ -22,19 +21,19 @@ import { Logo } from "@/components/ui/Logo";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
-import { notificaciones } from "@/lib/mock-data";
+import { notifications } from "@/lib/mock-data";
 
-const unreadCount = notificaciones.filter((n) => !n.leida).length;
+const unreadCount = notifications.filter((n) => !n.read).length;
 
 const navLinks = [
   { label: "Feed", href: "/feed" },
 ];
 
 const userMenuItems = [
-  { label: "Mi perfil", href: "/perfil/u1", icon: User },
-  { label: "Mis publicaciones", href: "/mis-publicaciones", icon: ShoppingBag },
-  { label: "Favoritos", href: "/favoritos", icon: Heart },
-  { label: "Mensajes", href: "/mensajes", icon: MessageSquare },
+  { label: "Mi perfil", href: "/profile/u1", icon: User },
+  { label: "Mis publicaciones", href: "/my-listings", icon: ShoppingBag },
+  { label: "Favoritos", href: "/favorites", icon: Heart },
+  { label: "Mensajes", href: "/messages", icon: MessageSquare },
 ];
 
 export function Navbar() {
@@ -56,7 +55,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+    <header className="sticky top-0 z-40 bg-white/80 dark:bg-black/70 backdrop-blur-md border-b border-cyan-100 dark:border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 h-16">
           {/* Logo */}
@@ -85,7 +84,7 @@ export function Navbar() {
             <motion.button
               onClick={toggleTheme}
               whileTap={{ scale: 0.9 }}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 dark:text-cyan-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               aria-label="Cambiar tema"
             >
               {isDark ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
@@ -95,8 +94,8 @@ export function Navbar() {
               <>
                 {/* Publicar — CTA rápido */}
                 <Link
-                  href="/publicar"
-                  className="hidden sm:flex items-center gap-1.5 bg-primary text-white text-sm font-semibold px-3 py-1.5 rounded-xl hover:bg-primary-dark transition-colors"
+                  href="/new-listing"
+                  className="hidden sm:flex items-center gap-1.5 bg-primary text-slate-900 text-sm font-semibold px-3 py-1.5 rounded-xl hover:bg-primary-dark transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Publicar</span>
@@ -104,7 +103,7 @@ export function Navbar() {
 
                 {/* Notificaciones */}
                 <Link
-                  href="/notificaciones"
+                  href="/notifications"
                   className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   <Bell className="w-4.5 h-4.5" />
@@ -121,13 +120,9 @@ export function Navbar() {
                     onClick={() => setUserMenuOpen((v) => !v)}
                     className="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <Image
-                      src={usuario!.avatar}
-                      alt={usuario!.nombre}
-                      width={32}
-                      height={32}
-                      className="rounded-full border-2 border-primary/20"
-                    />
+                    <div className="w-8 h-8 rounded-full border-2 border-primary/20 bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold text-sm">
+                      {usuario!.name.charAt(0).toUpperCase()}
+                    </div>
                   </button>
 
                   <AnimatePresence>
@@ -142,7 +137,7 @@ export function Navbar() {
                         {/* Header usuario */}
                         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                            {usuario!.nombre}
+                            {usuario!.name}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                             {usuario!.email}
@@ -185,8 +180,8 @@ export function Navbar() {
                   Iniciar sesión
                 </Link>
                 <Link
-                  href="/registro"
-                  className="bg-primary text-white text-sm font-semibold px-4 py-1.5 rounded-xl hover:bg-primary-dark transition-colors"
+                  href="/register"
+                  className="bg-primary text-slate-900 text-sm font-semibold px-4 py-1.5 rounded-xl hover:bg-primary-dark transition-colors"
                 >
                   Registrarse
                 </Link>
@@ -216,7 +211,7 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 overflow-hidden"
+            className="md:hidden bg-white/95 dark:bg-black/90 backdrop-blur-md border-t border-cyan-100 dark:border-white/10 overflow-hidden"
           >
             <nav className="px-4 py-3 flex flex-col gap-1">
               {navLinks.map((l) => (
@@ -231,7 +226,7 @@ export function Navbar() {
               ))}
               {isAuthenticated && (
                 <Link
-                  href="/publicar"
+                  href="/new-listing"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-primary hover:bg-primary-50 dark:hover:bg-primary/10 rounded-xl transition-colors"
                 >

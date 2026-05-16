@@ -3,13 +3,13 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Eye } from "lucide-react";
+import { Heart } from "lucide-react";
 import { cardItem, cardHoverProps } from "@/lib/animations";
 import { VerifiedBadge, CondicionBadge } from "./Badge";
-import type { Publicacion } from "@/lib/types";
+import type { Listing } from "@/lib/types";
 
 interface PublicacionCardProps {
-  publicacion: Publicacion;
+  publicacion: Listing;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   variant?: "grid" | "list";
@@ -23,42 +23,25 @@ function ListCard({
 }: Omit<PublicacionCardProps, "variant">) {
   return (
     <motion.div variants={cardItem} {...cardHoverProps}>
-      <Link href={`/publicacion/${p.id}`}>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex gap-4 p-3 sm:p-4 hover:shadow-md transition-shadow">
+      <Link href={`/listing/${p.id}`}>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-cyan-100 dark:border-gray-700 overflow-hidden flex gap-4 p-3 sm:p-4 hover:shadow-md transition-shadow">
           <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
-            <Image
-              src={p.imagenes[0]}
-              alt={p.titulo}
-              fill
-              className="object-cover"
-              sizes="96px"
-            />
+            <Image src={p.imageUrl ?? ""} alt={p.title} fill className="object-cover" sizes="96px" />
           </div>
           <div className="flex-1 min-w-0 flex flex-col gap-1">
-            <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
-              {p.titulo}
-            </p>
-            <p className="text-primary font-bold text-lg leading-tight">
-              Q{p.precio.toLocaleString()}
-            </p>
-            <VerifiedBadge universidad={p.universidadNombre} size="xs" />
-            <CondicionBadge condicion={p.condicion} size="xs" className="w-fit" />
+            <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{p.title}</p>
+            <p className="text-primary font-bold text-lg leading-tight">Q{p.price.toLocaleString()}</p>
+            <VerifiedBadge universidad={p.seller.university} size="xs" />
+            <CondicionBadge condicion={p.itemCondition} size="xs" className="w-fit" />
           </div>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              onToggleFavorite(p.id);
-            }}
+          <motion.button
+            onClick={(e) => { e.preventDefault(); onToggleFavorite(String(p.id)); }}
+            animate={isFavorite ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="flex-shrink-0 self-start p-1"
           >
-            <Heart
-              className={`w-4.5 h-4.5 transition-colors ${
-                isFavorite
-                  ? "fill-red-500 text-red-500"
-                  : "text-gray-400 hover:text-red-400"
-              }`}
-            />
-          </button>
+            <Heart className={`w-4.5 h-4.5 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400 hover:text-red-400"}`} />
+          </motion.button>
         </div>
       </Link>
     </motion.div>
@@ -73,85 +56,57 @@ export function PublicacionCard({
   variant = "grid",
 }: PublicacionCardProps) {
   if (variant === "list") {
-    return (
-      <ListCard
-        publicacion={p}
-        isFavorite={isFavorite}
-        onToggleFavorite={onToggleFavorite}
-      />
-    );
+    return <ListCard publicacion={p} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />;
   }
 
   return (
     <motion.div variants={cardItem} {...cardHoverProps} className="group">
-      <Link href={`/publicacion/${p.id}`}>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+      <Link href={`/listing/${p.id}`}>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-cyan-100 dark:border-gray-700 overflow-hidden h-full flex flex-col">
           {/* Imagen */}
           <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
             <Image
-              src={p.imagenes[0]}
-              alt={p.titulo}
+              src={p.imageUrl ?? ""}
+              alt={p.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             {/* Badge categoría */}
             <div className="absolute top-2.5 left-2.5">
               <span className="bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-200 text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
-                {p.categoria}
+                {p.category.name}
               </span>
             </div>
             {/* Botón favorito */}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                onToggleFavorite(p.id);
-              }}
-              className="absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
+            <motion.button
+              onClick={(e) => { e.preventDefault(); onToggleFavorite(String(p.id)); }}
+              animate={isFavorite ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm"
               aria-label={isFavorite ? "Quitar favorito" : "Agregar favorito"}
             >
-              <Heart
-                className={`w-3.5 h-3.5 transition-colors ${
-                  isFavorite
-                    ? "fill-red-500 text-red-500"
-                    : "text-gray-500 dark:text-gray-400"
-                }`}
-              />
-            </button>
-            {/* Badge condición */}
-            <div className="absolute bottom-2.5 left-2.5">
-              <CondicionBadge condicion={p.condicion} size="xs" />
+              <Heart className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"}`} />
+            </motion.button>
+            {/* Precio sobre la foto */}
+            <div className="absolute bottom-2.5 left-2.5 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1">
+              <span className="text-white font-bold text-lg leading-none">
+                Q{p.price.toLocaleString()}
+              </span>
             </div>
           </div>
 
           {/* Contenido */}
-          <div className="p-3.5 flex flex-col gap-2 flex-1">
-            <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 text-sm leading-snug">
-              {p.titulo}
+          <div className="p-2.5 flex flex-col gap-1.5 flex-1">
+            <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2 text-sm leading-snug">
+              {p.title}
             </h3>
-            <p className="text-primary font-bold text-xl leading-none">
-              Q{p.precio.toLocaleString()}
-            </p>
-            <VerifiedBadge universidad={p.universidadNombre} className="w-fit" />
+            <VerifiedBadge universidad={p.seller.university} size="xs" className="w-fit" />
 
-            {/* Vendedor + stats */}
-            <div className="flex items-center justify-between pt-2 mt-auto border-t border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <Image
-                  src={p.vendedor.avatar}
-                  alt={p.vendedor.nombre}
-                  width={18}
-                  height={18}
-                  className="rounded-full flex-shrink-0"
-                />
-                <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[90px]">
-                  {p.vendedor.nombre.split(" ")[0]}
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-xs text-gray-400">
-                <Eye className="w-3 h-3" />
-                <span>{p.vistas}</span>
-              </div>
+            <div className="pt-1.5 mt-auto border-t border-gray-100 dark:border-gray-700">
+              <CondicionBadge condicion={p.itemCondition} size="xs" />
             </div>
           </div>
         </div>

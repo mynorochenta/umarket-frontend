@@ -90,8 +90,18 @@ export const splashContainerVariants: Variants = {
 };
 
 export const cardHoverProps = {
-  whileHover: { y: -4, scale: 1.01, transition: { duration: 0.2 } },
+  whileHover: {
+    y: -4,
+    scale: 1.02,
+    boxShadow: "0 0 0 1px rgba(6, 182, 212, 0.3), 0 10px 25px -5px rgba(6, 182, 212, 0.1)",
+    transition: { duration: 0.2 },
+  },
   whileTap: { scale: 0.98, transition: { duration: 0.1 } },
+};
+
+export const heartBeat = {
+  animate: { scale: [1, 1.3, 1] },
+  transition: { duration: 0.3, ease: "easeInOut" },
 };
 
 /* Variante para secciones de la landing que aparecen al hacer scroll */
