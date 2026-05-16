@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useParams, notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowLeft, Send, Check, CheckCheck } from "lucide-react";
 import { VerifiedBadge } from "@/components/ui/Badge";
@@ -20,7 +19,15 @@ function timeLabel(date: Date): string {
   return date.toLocaleTimeString("es-GT", { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function ChatPage() {
+function Initials({ name, className = "" }: { name: string; className?: string }) {
+  return (
+    <div className={`bg-primary text-white flex items-center justify-center flex-shrink-0 ${className}`}>
+      {name.trim().charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
+export default function MessageThreadPage() {
   const params = useParams<{ id: string }>();
   const { usuario } = useAuth();
   const conv = conversations.find((c) => c.id === params.id);
@@ -62,10 +69,10 @@ export default function ChatPage() {
           <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
         </Link>
         <Link href={`/profile/${otro.id}`} className="flex items-center gap-2.5 group">
-          <Image src={otro.avatar} alt={otro.name} width={36} height={36} className="rounded-full" />
+          <Initials name={otro.name} className="w-9 h-9 rounded-full text-sm font-bold" />
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">{otro.name}</p>
-            <VerifiedBadge university={otro.universityShort} size="xs" />
+            <VerifiedBadge university={otro.universityName} size="xs" />
           </div>
         </Link>
         {conv.listingTitle && (
@@ -84,7 +91,7 @@ export default function ChatPage() {
           return (
             <div key={m.id} className={`flex ${propio ? "justify-end" : "justify-start"}`}>
               {!propio && (
-                <Image src={otro.avatar} alt={otro.name} width={28} height={28} className="rounded-full mr-2 flex-shrink-0 self-end" />
+                <Initials name={otro.name} className="w-7 h-7 rounded-full text-xs font-bold mr-2 self-end" />
               )}
               <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${
                 propio

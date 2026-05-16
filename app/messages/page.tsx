@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -17,7 +16,15 @@ function timeShort(date: Date): string {
   return `${Math.floor(secs / 86400)}d`;
 }
 
-export default function MensajesPage() {
+function Initials({ name }: { name: string }) {
+  return (
+    <div className="w-12 h-12 rounded-full bg-primary text-white text-lg font-bold flex items-center justify-center flex-shrink-0">
+      {name.trim().charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
+export default function MessagesPage() {
   const { usuario } = useAuth();
   const conversaciones = usuario ? getConversationsByUser(String(usuario.id)) : [];
 
@@ -52,7 +59,7 @@ export default function MensajesPage() {
                   <Link href={`/messages/${conv.id}`}>
                     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 flex items-center gap-3 hover:border-primary/30 hover:shadow-sm transition-all">
                       <div className="relative flex-shrink-0">
-                        <Image src={otro.avatar} alt={otro.name} width={48} height={48} className="rounded-full" />
+                        <Initials name={otro.name} />
                         {conv.unreadCount > 0 && (
                           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                             {conv.unreadCount}
